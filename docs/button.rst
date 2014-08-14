@@ -15,7 +15,7 @@ because it is a controllable viewer with two states ("is pressed" and "is not pr
     A :class:`~pyglet_gui.controller.TwoStateController` and :class:`~pyglet_gui.core.Viewer`
     represented as a label and texture drawn on top of each other.
 
-    :param label: The string written in the button.
+    :param label: A string or a pyglet.text.Document written to the button.
     :param is_pressed: True if the button starts pressed
     :param on_press: A callback function of one argument called when the button is pressed  (optional).
 
@@ -23,7 +23,7 @@ because it is a controllable viewer with two states ("is pressed" and "is not pr
 
     .. attribute:: label
 
-        The label of the button (a string).
+        The label of the button, either a string or a pyglet.text.Document
 
     Accepted events:
 
@@ -39,7 +39,7 @@ because it is a controllable viewer with two states ("is pressed" and "is not pr
 
     A :class:`Button` that changes back to its original state when the mouse is released.
 
-    :param label: The string written in the button.
+    :param label: A string or a pyglet.text.Document written to the button.
     :param on_release: A callback function of one argument called when the button is released (optional).
 
     Accepted events:
@@ -56,7 +56,7 @@ because it is a controllable viewer with two states ("is pressed" and "is not pr
 
      A button drawn as a checkbox icon with the label on the side.
 
-    :param label: A string written in the button graphics.
+    :param label: A string or a pyglet.text.Document written to the button.
     :param is_pressed: True if the button starts pressed
     :param on_press: A callback function of one argument called when the button is pressed  (optional).
     :param align: Whether the label is left or right of the checkbox.
@@ -70,7 +70,7 @@ because it is a controllable viewer with two states ("is pressed" and "is not pr
 
     A :class:`Button` that is focusable and thus can be selected with TAB.
 
-    :param label: The string written in the button.
+    :param label: A string or a pyglet.text.Document written to the button.
     :param is_pressed: True if the button starts pressed
     :param on_press: A callback function of one argument called when the button is pressed  (optional).
 

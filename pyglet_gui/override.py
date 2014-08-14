@@ -9,7 +9,6 @@ class Label(pyglet.text.Label):
     def unload(self):
         self.delete()
 
-
 class InputLabel(pyglet.text.Label):
     def _get_left(self):
         if self._multiline:

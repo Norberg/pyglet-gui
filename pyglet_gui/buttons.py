@@ -12,8 +12,10 @@ class Button(TwoStateController, Viewer):
     def __init__(self, label="", is_pressed=False, on_press=None):
         TwoStateController.__init__(self, is_pressed=is_pressed, on_press=on_press)
         Viewer.__init__(self)
-
-        self.label = label
+        if isinstance(label, str):
+            self._document = pyglet.text.document.UnformattedDocument(label)
+        else:
+            self._document = label
 
         # graphics
         self._label = None
@@ -44,19 +46,21 @@ class Button(TwoStateController, Viewer):
 
         self._button = theme['image'].generate(theme['gui_color'], **self.get_batch('background'))
 
-        self._label = Label(self.label,
-                            font_name=theme['font'],
-                            font_size=theme['font_size'],
-                            color=theme['text_color'],
-                            **self.get_batch('foreground'))
+        self._document.set_style(0, len(self._document.text), {
+            'font_name': theme['font'],
+            'font_size': theme['font_size'],
+            'color': theme['text_color'],
+        })
+        self._label = pyglet.text.DocumentLabel(self._document, **self.get_batch('foreground'))
 
     def unload_graphics(self):
         self._button.unload()
-        self._label.unload()
+        self._label.document.pop_handlers() #needed due to bug #758 in pyglet
+        self._label.delete()
 
     def compute_size(self):
         # Treat the height of the label as ascent + descent
-        font = self._label.document.get_font()
+        font = self._label.document.get_font(0)
         height = font.ascent - font.descent
 
         return self._button.get_needed_size(self._label.content_width, height)
@@ -67,10 +71,10 @@ class Button(TwoStateController, Viewer):
         # centers the label on the middle of the button
         x, y, width, height = self._button.get_content_region()
 
-        font = self._label.document.get_font()
+        font = self._label.document.get_font(0)
         self._label.x = x + width/2 - self._label.content_width/2
         self._label.y = y + height/2 - font.ascent/2 - font.descent
-        self._label.update()
+        self._label._update()
 
     def delete(self):
         TwoStateController.delete(self)
@@ -127,13 +131,13 @@ class Checkbox(Button):
                                 self._button.width,
                                 self._button.height)
 
-        font = self._label.document.get_font()
+        font = self._label.document.get_font(0)
         height = font.ascent - font.descent
         self._label.y = self.y + self.height/2 - height/2 - font.descent
 
     def compute_size(self):
         # Treat the height of the label as ascent + descent
-        font = self._label.document.get_font()
+        font = self._label.document.get_font(0)
         height = font.ascent - font.descent
 
         return self._button.width + self._padding + self._label.content_width, max(self._button.height, height)

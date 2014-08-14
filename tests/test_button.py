@@ -60,6 +60,13 @@ class TestFocusButton(TestPygletGUI, GenericButtonTest):
         self.button.on_key_press(pyglet.window.key.ENTER,None)
         self.assertEqual(self.button.is_pressed, True)
 
+class TestHTMLFormatedButton(TestPygletGUI, GenericButtonTest):
+    def setUp(self):
+        TestPygletGUI.setUp(self)
+        htmlLabel = pyglet.text.decode_html("HTML Button - <b>Bold</b> <i>Italics</i>")
+        self.button = Button(label=htmlLabel)
+        GenericButtonTest.setUp(self)
+
 
 if __name__ == "__main__":
     import unittest

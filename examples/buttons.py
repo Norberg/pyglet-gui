@@ -1,5 +1,7 @@
 from setup import *
 
+import pyglet
+
 from pyglet_gui.manager import Manager
 from pyglet_gui.buttons import Button, OneTimeButton, Checkbox
 from pyglet_gui.containers import VerticalContainer
@@ -40,8 +42,11 @@ theme = Theme({"font": "Lucida Grande",
                }
               }, resources_path='../theme/')
 
+htmlLabel = pyglet.text.decode_html("HTML Button - <b>Bold</b> <i>Italics</i>")
+
 # Set up a Manager
-Manager(VerticalContainer([Button(label="Persistent button"),
+Manager(VerticalContainer([Button(label="Persistent Button"),
+                           Button(label=htmlLabel),
                            OneTimeButton(label="One time button"),
                            Checkbox(label="Checkbox")]),
         window=window,
