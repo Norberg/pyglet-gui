@@ -69,10 +69,10 @@ class Scrollable(Wrapper, Controller, ControllerManager):
         self._theme = manager.theme
         self.batch = manager.batch
         self.root_group = ScrollableGroup(0, 0, self.width, self.height, parent=manager.group['foreground'])
-        self.group['panel'] = pyglet.graphics.OrderedGroup(0, self.root_group)
-        self.group['background'] = pyglet.graphics.OrderedGroup(10, self.root_group)
-        self.group['foreground'] = pyglet.graphics.OrderedGroup(20, self.root_group)
-        self.group['highlight'] = pyglet.graphics.OrderedGroup(30, self.root_group)
+        self.group['panel'] = pyglet.graphics.Group(order=0, parent=self.root_group)
+        self.group['background'] = pyglet.graphics.Group(order=10, parent=self.root_group)
+        self.group['foreground'] = pyglet.graphics.Group(order=20, parent=self.root_group)
+        self.group['highlight'] = pyglet.graphics.Group(order=30, parent=self.root_group)
         self.content.set_manager(self)
         self.content.parent = self
 

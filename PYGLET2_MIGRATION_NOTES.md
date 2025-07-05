@@ -1,11 +1,33 @@
 # Pyglet2+ Migration Notes
 
 ## Summary
-The migration from pyglet 1.x to pyglet 2+ revealed **significant API breaking changes** that required comprehensive updates. While the most critical issues have been addressed, some areas still require careful testing and potentially further updates.
+The migration from pyglet 1.x to pyglet 2+ revealed **significant API breaking changes** that required comprehensive updates. The most critical issue was the complete removal of `OrderedGroup`, which prevented the library from even importing. While the most critical issues have been addressed, some areas still require careful testing and potentially further updates.
 
 ## ✅ Issues Fixed
 
-### 1. Text Layout Constructor Arguments (CRITICAL)
+### 1. Graphics API Complete Overhaul (CRITICAL - BLOCKING)
+**Problem**: `OrderedGroup` was completely removed in pyglet 2.1+
+
+**Old (pyglet 1.x)**:
+```python
+pyglet.graphics.OrderedGroup(order_value)
+pyglet.graphics.OrderedGroup(order_value, parent_group)
+```
+
+**New (pyglet 2.1+)**:
+```python  
+pyglet.graphics.Group(order=order_value)
+pyglet.graphics.Group(order=order_value, parent=parent_group)
+```
+
+**Files Fixed**:
+- `pyglet_gui/manager.py` - ViewerManagerGroup inheritance and group creation
+- `pyglet_gui/scrollable.py` - All group creation calls
+- `tests/test_theme.py` - Test group creation
+
+**Impact**: Without this fix, the library **could not be imported at all** - complete blocking failure.
+
+### 2. Text Layout Constructor Arguments (CRITICAL)
 **Problem**: `IncrementalTextLayout` constructor argument order completely changed in pyglet 2.1+
 
 **Old (pyglet 1.x)**:
@@ -24,14 +46,14 @@ IncrementalTextLayout(document, x, y, z, width, height, anchor_x, anchor_y, rota
 
 **Impact**: Without this fix, **all text input and document widgets would crash** on creation.
 
-### 2. Label API Updates
+### 3. Label API Updates
 **Problem**: `bold` parameter deprecated in favor of `weight`
 
 **Fixed**:
 - `pyglet_gui/gui.py`: Updated Label class constructor
 - `pyglet_gui/text_input.py`: Updated InputLabel constructor with new argument order
 
-### 3. Version Requirements
+### 4. Version Requirements
 - Updated minimum pyglet version: `>=1.2` → `>=2.0`
 - Dropped Python 2.7 support
 - Updated README and setup.py
@@ -83,18 +105,18 @@ pyglet.text.Label._update(self)    # Internal method
 - Widget events now pass widget instance as first argument
 - Some event signatures may have changed
 
-### 4. Graphics Batch/Group API
-**Risk Level**: LOW 🟢
-
-**Areas**:
-- `OrderedGroup` usage in `manager.py` and `scrollable.py`
-- Batch drawing methods
-- Group ordering and hierarchy
-
 ## 🧪 Testing Strategy
 
 ### Essential Tests
-1. **Text Input Widget**:
+1. **Import Test** (Now works):
+   ```python
+   # Should now work without OrderedGroup errors
+   import pyglet_gui.gui
+   import pyglet_gui.manager
+   import pyglet_gui.scrollable
+   ```
+
+2. **Text Input Widget**:
    ```python
    # Test basic functionality
    text_input = TextInput("Test text", length=20)
@@ -103,7 +125,7 @@ pyglet.text.Label._update(self)    # Internal method
    # Test text overflow/clipping
    ```
 
-2. **Document Widget**:
+3. **Document Widget**:
    ```python
    # Test document creation and display
    doc = Document("Long text content...", width=200, height=100)
@@ -111,7 +133,7 @@ pyglet.text.Label._update(self)    # Internal method
    # Test text layout
    ```
 
-3. **Label Rendering**:
+4. **Label Rendering**:
    ```python
    # Test various label configurations
    label1 = Label("Test", weight="bold")
@@ -120,6 +142,7 @@ pyglet.text.Label._update(self)    # Internal method
 
 ### Runtime Error Monitoring
 Monitor for these specific errors:
+- ~~`AttributeError: module 'pyglet.graphics' has no attribute 'OrderedGroup'`~~ ✅ FIXED
 - `AttributeError: '_Label' object has no attribute '_vertex_lists'`
 - `TypeError` in text layout positioning
 - Graphics rendering errors
@@ -153,6 +176,9 @@ class InputLabel(pyglet.text.Label):
 
 ## 📋 Pre-Release Checklist
 
+- [x] Fixed OrderedGroup removal (blocking import issue)
+- [x] Fixed IncrementalTextLayout constructor
+- [x] Fixed Label weight parameter
 - [ ] Install pyglet 2.0+ in clean environment
 - [ ] Run all examples without errors
 - [ ] Test text input functionality thoroughly
@@ -164,7 +190,7 @@ class InputLabel(pyglet.text.Label):
 
 ## 🚀 Recommended Next Steps
 
-1. **Immediate**: Test with real pyglet 2.0+ installation
+1. **Immediate**: Test with real pyglet 2.0+ installation (critical OrderedGroup issue now resolved)
 2. **Short-term**: Address any runtime errors found in testing
 3. **Medium-term**: Refactor `override.py` to avoid internal APIs
 4. **Long-term**: Consider pyglet 2.1+ specific optimizations

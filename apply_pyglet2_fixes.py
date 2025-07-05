@@ -189,6 +189,98 @@ def update_readme():
     print("✅ Updated README.md")
     return True
 
+def apply_ordered_group_fix():
+    """Fix OrderedGroup removal in pyglet 2.1+ - replace with Group(order=X)"""
+    files_to_fix = [
+        "pyglet_gui/manager.py",
+        "pyglet_gui/scrollable.py", 
+        "tests/test_theme.py"
+    ]
+    
+    fixed_count = 0
+    
+    for file_path in files_to_fix:
+        if not os.path.exists(file_path):
+            print(f"⚠️ {file_path} not found, skipping...")
+            continue
+            
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+            
+            original_content = content
+            
+            # Fix ViewerManagerGroup inheritance
+            if "class ViewerManagerGroup(pyglet.graphics.OrderedGroup):" in content:
+                content = content.replace(
+                    "class ViewerManagerGroup(pyglet.graphics.OrderedGroup):",
+                    "class ViewerManagerGroup(pyglet.graphics.Group):"
+                )
+            
+            # Fix ViewerManagerGroup constructor
+            if "pyglet.graphics.OrderedGroup.__init__(self, self._get_next_top_order(), parent)" in content:
+                content = content.replace(
+                    "pyglet.graphics.OrderedGroup.__init__(self, self._get_next_top_order(), parent)",
+                    "pyglet.graphics.Group.__init__(self, order=self._get_next_top_order(), parent=parent)"
+                )
+            
+            # Fix comparison methods
+            content = content.replace(
+                "return pyglet.graphics.OrderedGroup.__eq__(self, other)",
+                "return pyglet.graphics.Group.__eq__(self, other)"
+            )
+            content = content.replace(
+                "return pyglet.graphics.OrderedGroup.__lt__(self, other)",
+                "return pyglet.graphics.Group.__lt__(self, other)"
+            )
+            
+            # Fix OrderedGroup creation patterns
+            content = content.replace(
+                "pyglet.graphics.OrderedGroup(10, self.root_group)",
+                "pyglet.graphics.Group(order=10, parent=self.root_group)"
+            )
+            content = content.replace(
+                "pyglet.graphics.OrderedGroup(20, self.root_group)",
+                "pyglet.graphics.Group(order=20, parent=self.root_group)"
+            )
+            content = content.replace(
+                "pyglet.graphics.OrderedGroup(30, self.root_group)",
+                "pyglet.graphics.Group(order=30, parent=self.root_group)"
+            )
+            content = content.replace(
+                "pyglet.graphics.OrderedGroup(40, self.root_group)",
+                "pyglet.graphics.Group(order=40, parent=self.root_group)"
+            )
+            content = content.replace(
+                "pyglet.graphics.OrderedGroup(0, self.root_group)",
+                "pyglet.graphics.Group(order=0, parent=self.root_group)"
+            )
+            
+            # Fix test OrderedGroup
+            content = content.replace(
+                "pyglet.graphics.OrderedGroup(1)",
+                "pyglet.graphics.Group(order=1)"
+            )
+            
+            if content != original_content:
+                with open(file_path, 'w') as f:
+                    f.write(content)
+                print(f"✅ Fixed OrderedGroup usage in {file_path}")
+                fixed_count += 1
+            else:
+                print(f"ℹ️ No OrderedGroup changes needed in {file_path}")
+                
+        except Exception as e:
+            print(f"❌ Error fixing OrderedGroup in {file_path}: {e}")
+            return False
+    
+    if fixed_count > 0:
+        print(f"✅ Fixed OrderedGroup in {fixed_count} files")
+        return True
+    else:
+        print("ℹ️ No OrderedGroup fixes needed")
+        return True
+
 def main():
     print("🔧 Applying pyglet2+ compatibility fixes...")
     print("=" * 50)
@@ -204,7 +296,8 @@ def main():
         apply_gui_py_fix,
         apply_text_input_fix,
         apply_document_fix,
-        update_readme
+        update_readme,
+        apply_ordered_group_fix
     ]
     
     applied = 0

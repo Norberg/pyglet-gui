@@ -141,16 +141,16 @@ def test_document_creation():
         return False
 
 def test_graphics_api():
-    """Test OrderedGroup and batch functionality"""
+    """Test Group and batch functionality"""
     print("\n🧪 Testing Graphics API...")
     try:
         import pyglet
         from pyglet_gui.manager import ViewerManagerGroup
         
-        # Test OrderedGroup
+        # Test Group (OrderedGroup was removed in pyglet 2.1+)
         batch = pyglet.graphics.Batch()
-        group1 = pyglet.graphics.OrderedGroup(1)
-        group2 = pyglet.graphics.OrderedGroup(2, parent=group1)
+        group1 = pyglet.graphics.Group(order=1)
+        group2 = pyglet.graphics.Group(order=2, parent=group1)
         
         # Test ViewerManagerGroup
         manager_group = ViewerManagerGroup()

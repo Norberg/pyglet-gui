@@ -6,7 +6,7 @@ from pyglet_gui.core import Rectangle
 from pyglet_gui.containers import Wrapper
 
 
-class ViewerManagerGroup(pyglet.graphics.OrderedGroup):
+class ViewerManagerGroup(pyglet.graphics.Group):
     """
     Ensure that Viewers inside Manager can be drawn with
     blending enabled, and that Managers are drawn in a particular
@@ -23,24 +23,24 @@ class ViewerManagerGroup(pyglet.graphics.OrderedGroup):
         """
         Creates a new ViewerManagerGroup. By default it is on top.
         """
-        pyglet.graphics.OrderedGroup.__init__(self, self._get_next_top_order(), parent)
+        pyglet.graphics.Group.__init__(self, order=self._get_next_top_order(), parent=parent)
         self.own_order = self.order
 
     def __eq__(self, other):
         """
         When compared with other ViewerManagerGroups, we'll return the own_order
-        compared against theirs; otherwise use the OrderedGroup comparison.
+        compared against theirs; otherwise use the Group comparison.
         """
         if isinstance(other, ViewerManagerGroup):
             return self.own_order == other.own_order
         else:
-            return pyglet.graphics.OrderedGroup.__eq__(self, other)
+            return pyglet.graphics.Group.__eq__(self, other)
 
     def __lt__(self, other):
         if isinstance(other, ViewerManagerGroup):
             return self.own_order < other.own_order
         else:
-            return pyglet.graphics.OrderedGroup.__lt__(self, other)
+            return pyglet.graphics.Group.__lt__(self, other)
 
     def __hash__(self):
         return hash((self.order, self.parent))
@@ -95,10 +95,10 @@ class ViewerManager(Wrapper):
             self._has_own_batch = False
 
         self._root_group = ViewerManagerGroup(parent=group)
-        self.group = {'panel': pyglet.graphics.OrderedGroup(10, self.root_group),
-                      'background': pyglet.graphics.OrderedGroup(20, self.root_group),
-                      'foreground': pyglet.graphics.OrderedGroup(30, self.root_group),
-                      'highlight': pyglet.graphics.OrderedGroup(40, self.root_group)}
+        self.group = {'panel': pyglet.graphics.Group(order=10, parent=self.root_group),
+                      'background': pyglet.graphics.Group(order=20, parent=self.root_group),
+                      'foreground': pyglet.graphics.Group(order=30, parent=self.root_group),
+                      'highlight': pyglet.graphics.Group(order=40, parent=self.root_group)}
 
         self.content.set_manager(self)
         self.content.parent = self
