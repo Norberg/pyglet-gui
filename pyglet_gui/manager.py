@@ -39,8 +39,21 @@ class ViewerManagerGroup(pyglet.graphics.Group):
     def __lt__(self, other):
         if isinstance(other, ViewerManagerGroup):
             return self.own_order < other.own_order
+        elif hasattr(other, 'order'):
+            # Compare with other Group's order attribute
+            other_order = other.order
+            if hasattr(other_order, 'order'):
+                # If other.order is also a Group object, get its order
+                return self.order < other_order.order
+            else:
+                # other.order is a numeric value
+                return self.order < other_order
+        elif isinstance(other, (int, float)):
+            # Direct numeric comparison
+            return self.order < other
         else:
-            return pyglet.graphics.Group.__lt__(self, other)
+            # Fallback to order-based comparison
+            return self.order < getattr(other, '_order', 0)
 
     def __hash__(self):
         return hash((self.order, self.parent))
@@ -61,7 +74,8 @@ class ViewerManagerGroup(pyglet.graphics.Group):
         """
         Ensure that blending is set.
         """
-        gl.glPushAttrib(gl.GL_ENABLE_BIT | gl.GL_CURRENT_BIT)
+        # glPushAttrib/glPopAttrib removed in pyglet 2.1+
+        # Just enable blending directly - modern OpenGL approach
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
@@ -69,7 +83,9 @@ class ViewerManagerGroup(pyglet.graphics.Group):
         """
         Restore previous blending state.
         """
-        gl.glPopAttrib()
+        # glPushAttrib/glPopAttrib removed in pyglet 2.1+
+        # No need to restore state - pyglet handles this automatically
+        pass
 
 
 class ViewerManager(Wrapper):

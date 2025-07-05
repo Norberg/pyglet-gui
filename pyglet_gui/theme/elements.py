@@ -94,13 +94,22 @@ class TextureGraphicElement(GraphicElement):
         program = pyglet.graphics.get_default_shader()
         vertices = self._get_vertices_3d()
         colors = self._color * (len(vertices) // 3)  # Match vertex count  
-        tex_coords = self.texture.tex_coords
+        # Convert 2D tex coords to 3D
+        tex_coords_2d = self.texture.tex_coords
+        tex_coords_3d = self._convert_tex_coords_to_3d(tex_coords_2d)
         self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_TRIANGLES,
                                                batch=self._batch,
                                                group=self._group,
                                                position=('f', vertices),
                                                colors=('Bn', colors),
-                                               tex_coords=('f', tex_coords))
+                                               tex_coords=('f', tex_coords_3d))
+
+    def _convert_tex_coords_to_3d(self, tex_coords_2d):
+        """Convert 2D texture coordinates to 3D by adding z=0 component"""
+        tex_coords_3d = []
+        for i in range(0, len(tex_coords_2d), 2):
+            tex_coords_3d.extend([tex_coords_2d[i], tex_coords_2d[i+1], 0.0])
+        return tex_coords_3d
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -129,13 +138,22 @@ class FrameTextureGraphicElement(GraphicElement):
         program = pyglet.graphics.get_default_shader()
         vertices = self._get_vertices_3d()
         colors = self._color * (len(vertices) // 3)  # Match vertex count
-        tex_coords = self._get_tex_coords()
+        # Convert 2D tex coords to 3D
+        tex_coords_2d = self._get_tex_coords()
+        tex_coords_3d = self._convert_tex_coords_to_3d(tex_coords_2d)
         self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_TRIANGLES,
                                                batch=self._batch,
                                                group=self._group,
                                                position=('f', vertices),
                                                colors=('Bn', colors),
-                                               tex_coords=('f', tex_coords))
+                                               tex_coords=('f', tex_coords_3d))
+
+    def _convert_tex_coords_to_3d(self, tex_coords_2d):
+        """Convert 2D texture coordinates to 3D by adding z=0 component"""
+        tex_coords_3d = []
+        for i in range(0, len(tex_coords_2d), 2):
+            tex_coords_3d.extend([tex_coords_2d[i], tex_coords_2d[i+1], 0.0])
+        return tex_coords_3d
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left
