@@ -32,11 +32,14 @@ class GraphicElement(Rectangle):
         assert self._vertex_list is None
         # Get the default shader program and use it to create vertex list
         program = pyglet.graphics.get_default_shader()
-        self._vertex_list = program.vertex_list(12, gl.GL_LINES,
+        # Use 3D positions as required by default shader
+        vertices = self._get_vertices_3d()
+        colors = self._color * (len(vertices) // 3)  # Match vertex count
+        self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_LINES,
                                                batch=self._batch,
                                                group=self._group,
-                                               position=('i', self._get_vertices()),
-                                               colors=('B', self._color * 12))
+                                               position=('f', vertices),
+                                               colors=('Bn', colors))
 
     @abstractmethod
     def _get_vertices(self):
@@ -45,6 +48,14 @@ class GraphicElement(Rectangle):
         return (x1, y1, x2, y1, x2, y1, x2, y2,
                 x2, y2, x1, y2, x1, y2, x1, y1,
                 x1, y1, x2, y2, x1, y2, x2, y1)
+
+    def _get_vertices_3d(self):
+        """Convert 2D vertices to 3D by adding z=0 component"""
+        vertices_2d = self._get_vertices()
+        vertices_3d = []
+        for i in range(0, len(vertices_2d), 2):
+            vertices_3d.extend([float(vertices_2d[i]), float(vertices_2d[i+1]), 0.0])
+        return vertices_3d
 
     def unload(self):
         self._vertex_list.delete()
@@ -65,7 +76,7 @@ class GraphicElement(Rectangle):
         self.width, self.height = width, height
 
         if self._vertex_list is not None:
-            self._vertex_list.position = self._get_vertices()
+            self._vertex_list.position = self._get_vertices_3d()
 
 
 class TextureGraphicElement(GraphicElement):
@@ -81,12 +92,15 @@ class TextureGraphicElement(GraphicElement):
         assert self._vertex_list is None
         # Get the default shader program and use it to create vertex list
         program = pyglet.graphics.get_default_shader()
-        self._vertex_list = program.vertex_list(4, gl.GL_TRIANGLES,
+        vertices = self._get_vertices_3d()
+        colors = self._color * (len(vertices) // 3)  # Match vertex count  
+        tex_coords = self.texture.tex_coords
+        self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_TRIANGLES,
                                                batch=self._batch,
                                                group=self._group,
-                                               position=('i', self._get_vertices()),
-                                               colors=('B', self._color * 4),
-                                               tex_coords=('f', self.texture.tex_coords))
+                                               position=('f', vertices),
+                                               colors=('Bn', colors),
+                                               tex_coords=('f', tex_coords))
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -113,12 +127,15 @@ class FrameTextureGraphicElement(GraphicElement):
         # 36 vertices: 4 for each of the 9 rectangles.
         # Get the default shader program and use it to create vertex list
         program = pyglet.graphics.get_default_shader()
-        self._vertex_list = program.vertex_list(36, gl.GL_TRIANGLES,
+        vertices = self._get_vertices_3d()
+        colors = self._color * (len(vertices) // 3)  # Match vertex count
+        tex_coords = self._get_tex_coords()
+        self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_TRIANGLES,
                                                batch=self._batch,
                                                group=self._group,
-                                               position=('i', self._get_vertices()),
-                                               colors=('B', self._color * 36),
-                                               tex_coords=('f', self._get_tex_coords()))
+                                               position=('f', vertices),
+                                               colors=('Bn', colors),
+                                               tex_coords=('f', tex_coords))
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left
