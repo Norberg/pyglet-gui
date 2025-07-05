@@ -51,9 +51,11 @@ class Document(Controller, Viewer):
         if not self.set_document_style:
             self.do_set_document_style(self._manager)
 
-        self._content = pyglet.text.layout.IncrementalTextLayout(self._document,
-                                                                 self.content_width, self.max_height,
-                                                                 multiline=True, **self.get_batch('background'))
+        self._content = pyglet.text.layout.IncrementalTextLayout(
+            self._document,
+            x=0, y=0, z=0,
+            width=self.content_width, height=self.max_height,
+            multiline=True, **self.get_batch('background'))
 
     def unload_graphics(self):
         self._content.delete()
