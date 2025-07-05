@@ -30,13 +30,13 @@ class GraphicElement(Rectangle):
     @abstractmethod
     def _load(self):
         assert self._vertex_list is None
-        # Use vertex_list with batch and group parameters for GL_LINES mode
-        self._vertex_list = pyglet.graphics.vertex_list(12,
-                                                       ('v2i', self._get_vertices()),
-                                                       ('c4B', self._color * 12),
-                                                       batch=self._batch,
-                                                       group=self._group)
-        # Note: GL_LINES mode is handled internally by the batch system
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        self._vertex_list = program.vertex_list(12, gl.GL_LINES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('i', self._get_vertices()),
+                                               colors=('B', self._color * 12))
 
     @abstractmethod
     def _get_vertices(self):
@@ -65,7 +65,7 @@ class GraphicElement(Rectangle):
         self.width, self.height = width, height
 
         if self._vertex_list is not None:
-            self._vertex_list.vertices = self._get_vertices()
+            self._vertex_list.position = self._get_vertices()
 
 
 class TextureGraphicElement(GraphicElement):
@@ -79,14 +79,14 @@ class TextureGraphicElement(GraphicElement):
 
     def _load(self):
         assert self._vertex_list is None
-        # Use vertex_list with batch and group parameters for GL_QUADS mode
-        self._vertex_list = pyglet.graphics.vertex_list(4,
-                                                       ('v2i', self._get_vertices()),
-                                                       ('c4B', self._color * 4),
-                                                       ('t3f', self.texture.tex_coords),
-                                                       batch=self._batch,
-                                                       group=self._group)
-        # Note: GL_QUADS mode is handled internally by the batch system
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        self._vertex_list = program.vertex_list(4, gl.GL_TRIANGLES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('i', self._get_vertices()),
+                                               colors=('B', self._color * 4),
+                                               tex_coords=('f', self.texture.tex_coords))
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -111,14 +111,14 @@ class FrameTextureGraphicElement(GraphicElement):
         assert self._vertex_list is None
 
         # 36 vertices: 4 for each of the 9 rectangles.
-        # Use vertex_list with batch and group parameters for GL_QUADS mode
-        self._vertex_list = pyglet.graphics.vertex_list(36,
-                                                       ('v2i', self._get_vertices()),
-                                                       ('c4B', self._color * 36),
-                                                       ('t2f', self._get_tex_coords()),
-                                                       batch=self._batch,
-                                                       group=self._group)
-        # Note: GL_QUADS mode is handled internally by the batch system
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        self._vertex_list = program.vertex_list(36, gl.GL_TRIANGLES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('i', self._get_vertices()),
+                                               colors=('B', self._color * 36),
+                                               tex_coords=('f', self._get_tex_coords()))
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left

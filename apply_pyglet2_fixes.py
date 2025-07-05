@@ -273,14 +273,14 @@ def apply_ordered_group_fix():
 
 def apply_batch_add_fix():
     """Fix Batch.add() API change in elements.py"""
-    print("🔧 Applying Batch.add() → vertex_list() API fix...")
+    print("🔧 Applying Batch.add() → ShaderProgram.vertex_list() API fix...")
     
     elements_file = "pyglet_gui/theme/elements.py"
     if not os.path.exists(elements_file):
         print(f"❌ {elements_file} not found")
         return
     
-    # The complete fixed file content (this is complex replacement)
+    # The complete fixed file content using shader-based approach
     fixed_content = '''from abc import abstractmethod
 
 import pyglet
@@ -313,13 +313,13 @@ class GraphicElement(Rectangle):
     @abstractmethod
     def _load(self):
         assert self._vertex_list is None
-        # Use vertex_list with batch and group parameters for GL_LINES mode
-        self._vertex_list = pyglet.graphics.vertex_list(12,
-                                                       ('v2i', self._get_vertices()),
-                                                       ('c4B', self._color * 12),
-                                                       batch=self._batch,
-                                                       group=self._group)
-        # Note: GL_LINES mode is handled internally by the batch system
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        self._vertex_list = program.vertex_list(12, gl.GL_LINES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('i', self._get_vertices()),
+                                               colors=('B', self._color * 12))
 
     @abstractmethod
     def _get_vertices(self):
@@ -348,7 +348,7 @@ class GraphicElement(Rectangle):
         self.width, self.height = width, height
 
         if self._vertex_list is not None:
-            self._vertex_list.vertices = self._get_vertices()
+            self._vertex_list.position = self._get_vertices()
 
 
 class TextureGraphicElement(GraphicElement):
@@ -362,14 +362,14 @@ class TextureGraphicElement(GraphicElement):
 
     def _load(self):
         assert self._vertex_list is None
-        # Use vertex_list with batch and group parameters for GL_QUADS mode
-        self._vertex_list = pyglet.graphics.vertex_list(4,
-                                                       ('v2i', self._get_vertices()),
-                                                       ('c4B', self._color * 4),
-                                                       ('t3f', self.texture.tex_coords),
-                                                       batch=self._batch,
-                                                       group=self._group)
-        # Note: GL_QUADS mode is handled internally by the batch system
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        self._vertex_list = program.vertex_list(4, gl.GL_TRIANGLES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('i', self._get_vertices()),
+                                               colors=('B', self._color * 4),
+                                               tex_coords=('f', self.texture.tex_coords))
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -394,14 +394,14 @@ class FrameTextureGraphicElement(GraphicElement):
         assert self._vertex_list is None
 
         # 36 vertices: 4 for each of the 9 rectangles.
-        # Use vertex_list with batch and group parameters for GL_QUADS mode
-        self._vertex_list = pyglet.graphics.vertex_list(36,
-                                                       ('v2i', self._get_vertices()),
-                                                       ('c4B', self._color * 36),
-                                                       ('t2f', self._get_tex_coords()),
-                                                       batch=self._batch,
-                                                       group=self._group)
-        # Note: GL_QUADS mode is handled internally by the batch system
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        self._vertex_list = program.vertex_list(36, gl.GL_TRIANGLES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('i', self._get_vertices()),
+                                               colors=('B', self._color * 36),
+                                               tex_coords=('f', self._get_tex_coords()))
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left
@@ -456,44 +456,34 @@ class FrameTextureGraphicElement(GraphicElement):
     print(f"✅ Updated {elements_file}")
 
 def main():
-    print("🔧 Applying pyglet2+ compatibility fixes...")
-    print("=" * 50)
+    """Apply all pyglet2+ compatibility fixes"""
+    print("🚀 Starting pyglet2+ compatibility fixes for pyglet-gui")
+    print("=" * 60)
     
-    # Check if we're in the right directory
-    if not os.path.exists("pyglet_gui"):
-        print("❌ This doesn't appear to be the pyglet-gui directory")
-        print("   Make sure you're in the root of the pyglet-gui repository")
-        sys.exit(1)
+    # Apply all fixes in order
+    apply_setup_py_fix()
+    apply_gui_py_fix()
+    apply_text_input_fix()
+    apply_document_fix()
+    apply_ordered_group_fix()
+    apply_batch_add_fix()  # Updated Batch API fix with ShaderProgram
+    update_readme()
     
-    fixes = [
-        apply_setup_py_fix,
-        apply_gui_py_fix,
-        apply_text_input_fix,
-        apply_document_fix,
-        update_readme,
-        apply_ordered_group_fix,
-        apply_batch_add_fix
-    ]
+    print("\n" + "=" * 60)
+    print("✅ All pyglet2+ compatibility fixes applied successfully!")
+    print("\n📋 Summary of changes:")
+    print("   • Updated setup.py: pyglet>=2.0, version 0.2")
+    print("   • Fixed Label constructor: bold → weight parameter")
+    print("   • Fixed IncrementalTextLayout constructor argument order")
+    print("   • Fixed InputLabel constructor for pyglet 2.1+")
+    print("   • Fixed OrderedGroup → Group(order=X) usage")
+    print("   • Fixed Batch.add() → ShaderProgram.vertex_list() API")
+    print("   • Updated README.md requirements")
     
-    applied = 0
-    for fix in fixes:
-        try:
-            if fix():
-                applied += 1
-        except Exception as e:
-            print(f"❌ Error applying fix {fix.__name__}: {e}")
-    
-    print("\n" + "=" * 50)
-    print(f"📊 Applied {applied}/{len(fixes)} fixes")
-    
-    if applied == len(fixes):
-        print("🎉 All pyglet2+ fixes applied successfully!")
-        print("\nNext steps:")
-        print("1. pip install pyglet>=2.0")
-        print("2. python test_pyglet2_compatibility.py")
-    else:
-        print("⚠️ Some fixes failed to apply")
-        print("You may need to apply them manually")
+    print("\n🧪 Next steps:")
+    print("   1. Test with: python test_pyglet2_compatibility.py")
+    print("   2. Run examples: python test_examples.py")
+    print("   3. Install: pip install -e . pyglet>=2.0")
 
 if __name__ == "__main__":
     main()

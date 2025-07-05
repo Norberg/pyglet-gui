@@ -82,8 +82,11 @@ def test_import_pattern_fixes():
     if "batch.add(" in elements_content:
         print("❌ Old batch.add() still used in elements.py")
         return False
+    elif "pyglet.graphics.get_default_shader()" in elements_content and "program.vertex_list(" in elements_content:
+        print("✅ Batch API correctly updated to use ShaderProgram.vertex_list() in elements.py")
     elif "pyglet.graphics.vertex_list(" in elements_content and "batch=self._batch" in elements_content:
-        print("✅ Batch.add() correctly replaced with vertex_list(batch=batch) in elements.py")
+        print("⚠️ Using deprecated vertex_list() approach in elements.py")
+        return False
     elif "get_domain(" in elements_content:
         print("⚠️ Using get_domain() approach in elements.py (may have issues)")
         return False
@@ -153,7 +156,7 @@ def main():
         print("\n🎉 ALL SYNTAX FIXES VERIFIED!")
         print("✅ Successfully applied:")
         print("   • OrderedGroup → Group(order=X)")
-        print("   • Batch.add() → vertex_list(batch=batch) API")
+        print("   • Batch.add() → ShaderProgram.vertex_list() API")
         print("   • Label bold → weight parameter")
         print("   • IncrementalTextLayout argument fixes")
         print("   • Version requirements: pyglet 2.0+, Python 3.6+")
