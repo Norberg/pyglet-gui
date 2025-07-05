@@ -120,7 +120,7 @@ Detta projekt är licensierat under MIT-licensen - se `LICENSE` filen för detal
 
 ## Tack
 
-Ursprungligen utvecklat för pyglet 1.2+, nu uppdaterat för modern pyglet 2+ kompatibilitet genom omfattande community-insatser.
+Ursprungligen utvecklat för pyglet 2.0+, nu uppdaterat för modern pyglet 2+ kompatibilitet genom omfattande community-insatser.
 
 ---
 

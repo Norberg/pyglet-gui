@@ -82,8 +82,14 @@ def test_import_pattern_fixes():
     if "batch.add(" in elements_content:
         print("❌ Old batch.add() still used in elements.py")
         return False
+    elif "pyglet.graphics.vertex_list(" in elements_content and "batch=self._batch" in elements_content:
+        print("✅ Batch.add() correctly replaced with vertex_list(batch=batch) in elements.py")
     elif "get_domain(" in elements_content:
-        print("✅ Batch.add() correctly replaced with get_domain() in elements.py")
+        print("⚠️ Using get_domain() approach in elements.py (may have issues)")
+        return False
+    else:
+        print("❌ No recognizable vertex list creation pattern in elements.py")
+        return False
     
     # Test Label weight fixes
     with open("pyglet_gui/gui.py", 'r') as f:
@@ -147,7 +153,7 @@ def main():
         print("\n🎉 ALL SYNTAX FIXES VERIFIED!")
         print("✅ Successfully applied:")
         print("   • OrderedGroup → Group(order=X)")
-        print("   • Batch.add() → get_domain() API")
+        print("   • Batch.add() → vertex_list(batch=batch) API")
         print("   • Label bold → weight parameter")
         print("   • IncrementalTextLayout argument fixes")
         print("   • Version requirements: pyglet 2.0+, Python 3.6+")

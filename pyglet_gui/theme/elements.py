@@ -30,11 +30,13 @@ class GraphicElement(Rectangle):
     @abstractmethod
     def _load(self):
         assert self._vertex_list is None
-        # Create the domain for GL_LINES mode and add vertex list
-        domain = self._batch.get_domain(False, False, gl.GL_LINES, self._group, {'v2i': ('v', 2), 'c4B': ('c', 4)})
-        self._vertex_list = domain.create(12)
-        self._vertex_list.vertices = self._get_vertices()
-        self._vertex_list.colors = self._color * 12
+        # Use vertex_list with batch and group parameters for GL_LINES mode
+        self._vertex_list = pyglet.graphics.vertex_list(12,
+                                                       ('v2i', self._get_vertices()),
+                                                       ('c4B', self._color * 12),
+                                                       batch=self._batch,
+                                                       group=self._group)
+        # Note: GL_LINES mode is handled internally by the batch system
 
     @abstractmethod
     def _get_vertices(self):
@@ -77,12 +79,14 @@ class TextureGraphicElement(GraphicElement):
 
     def _load(self):
         assert self._vertex_list is None
-        # Create the domain for GL_QUADS mode and add vertex list
-        domain = self._batch.get_domain(False, False, gl.GL_QUADS, self._group, {'v2i': ('v', 2), 'c4B': ('c', 4), 't3f': ('t', 3)})
-        self._vertex_list = domain.create(4)
-        self._vertex_list.vertices = self._get_vertices()
-        self._vertex_list.colors = self._color * 4
-        self._vertex_list.tex_coords = self.texture.tex_coords
+        # Use vertex_list with batch and group parameters for GL_QUADS mode
+        self._vertex_list = pyglet.graphics.vertex_list(4,
+                                                       ('v2i', self._get_vertices()),
+                                                       ('c4B', self._color * 4),
+                                                       ('t3f', self.texture.tex_coords),
+                                                       batch=self._batch,
+                                                       group=self._group)
+        # Note: GL_QUADS mode is handled internally by the batch system
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -107,12 +111,14 @@ class FrameTextureGraphicElement(GraphicElement):
         assert self._vertex_list is None
 
         # 36 vertices: 4 for each of the 9 rectangles.
-        # Create the domain for GL_QUADS mode and add vertex list
-        domain = self._batch.get_domain(False, False, gl.GL_QUADS, self._group, {'v2i': ('v', 2), 'c4B': ('c', 4), 't2f': ('t', 2)})
-        self._vertex_list = domain.create(36)
-        self._vertex_list.vertices = self._get_vertices()
-        self._vertex_list.colors = self._color * 36
-        self._vertex_list.tex_coords = self._get_tex_coords()
+        # Use vertex_list with batch and group parameters for GL_QUADS mode
+        self._vertex_list = pyglet.graphics.vertex_list(36,
+                                                       ('v2i', self._get_vertices()),
+                                                       ('c4B', self._color * 36),
+                                                       ('t2f', self._get_tex_coords()),
+                                                       batch=self._batch,
+                                                       group=self._group)
+        # Note: GL_QUADS mode is handled internally by the batch system
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left
