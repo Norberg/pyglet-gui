@@ -48,21 +48,18 @@ Supported Versions
 
 * Python:
 
-    * 2.7
-    * 3.2
-    * 3.3
-    * 3.4
+    * 3.6+
 
 * Pyglet:
 
-    * >= 1.2
+    * >= 2.0
 
 Installation
 --------------
 
 1. Install Pyglet:
 
-     pip install --upgrade http://pyglet.googlecode.com/archive/tip.zip
+     pip install pyglet>=2.0
 
 2. Install Pyglet-gui:
 

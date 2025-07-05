@@ -45,11 +45,11 @@ class Graphic(Viewer):
 
 
 class Label(Viewer):
-    def __init__(self, text="", bold=False, italic=False,
+    def __init__(self, text="", weight=None, italic=False,
                  font_name=None, font_size=None, color=None, path=None):
         Viewer.__init__(self)
         self.text = text
-        self.bold = bold
+        self.weight = weight
         self.italic = italic
         self.font_name = font_name
         self.font_size = font_size
@@ -64,7 +64,7 @@ class Label(Viewer):
         theme = self.theme[self.get_path()]
 
         self.label = pyglet.text.Label(self.text,
-                                       bold=self.bold,
+                                       weight=self.weight,
                                        italic=self.italic,
                                        color=self.color or theme['text_color'],
                                        font_name=self.font_name or theme['font'],
