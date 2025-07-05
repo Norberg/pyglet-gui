@@ -36,19 +36,23 @@ class TextInput(FocusMixin, Viewer):
         return 'input'
 
     def _load_label(self, theme):
-        self._label = InputLabel(self._document.text,
-                                 multiline=False,
-                                 width=self.width-self._padding*2,
-                                 color=theme['text_color'],
-                                 font_name=theme['font'],
-                                 font_size=theme['font_size'],
-                                 **self.get_batch('foreground'))
+        self._label = InputLabel(
+            text=self._document.text,
+            x=0, y=0, z=0,
+            width=self.width-self._padding*2,
+            multiline=False,
+            color=theme['text_color'],
+            font_name=theme['font'],
+            font_size=theme['font_size'],
+            **self.get_batch('foreground'))
 
     def _load_writing(self, theme):
         needed_width, needed_height = self._compute_needed_size()
 
         self._text_layout = pyglet.text.layout.IncrementalTextLayout(
-            self._document, needed_width, needed_height,
+            self._document, 
+            x=0, y=0, z=0,
+            width=needed_width, height=needed_height,
             multiline=False, **self.get_batch('foreground'))
 
         self._caret = pyglet.text.caret.Caret(self._text_layout, color=theme['gui_color'][0:3])

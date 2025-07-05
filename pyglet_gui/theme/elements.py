@@ -30,9 +30,16 @@ class GraphicElement(Rectangle):
     @abstractmethod
     def _load(self):
         assert self._vertex_list is None
-        self._vertex_list = self._batch.add(12, gl.GL_LINES, self._group,
-                                            ('v2i', self._get_vertices()),
-                                            ('c4B', self._color * 12))
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        # Use 3D positions as required by default shader
+        vertices = self._get_vertices_3d()
+        colors = self._color * (len(vertices) // 3)  # Match vertex count
+        self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_LINES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('f', vertices),
+                                               colors=('Bn', colors))
 
     @abstractmethod
     def _get_vertices(self):
@@ -41,6 +48,14 @@ class GraphicElement(Rectangle):
         return (x1, y1, x2, y1, x2, y1, x2, y2,
                 x2, y2, x1, y2, x1, y2, x1, y1,
                 x1, y1, x2, y2, x1, y2, x2, y1)
+
+    def _get_vertices_3d(self):
+        """Convert 2D vertices to 3D by adding z=0 component"""
+        vertices_2d = self._get_vertices()
+        vertices_3d = []
+        for i in range(0, len(vertices_2d), 2):
+            vertices_3d.extend([float(vertices_2d[i]), float(vertices_2d[i+1]), 0.0])
+        return vertices_3d
 
     def unload(self):
         self._vertex_list.delete()
@@ -61,7 +76,7 @@ class GraphicElement(Rectangle):
         self.width, self.height = width, height
 
         if self._vertex_list is not None:
-            self._vertex_list.vertices = self._get_vertices()
+            self._vertex_list.position = self._get_vertices_3d()
 
 
 class TextureGraphicElement(GraphicElement):
@@ -75,10 +90,26 @@ class TextureGraphicElement(GraphicElement):
 
     def _load(self):
         assert self._vertex_list is None
-        self._vertex_list = self._batch.add(4, gl.GL_QUADS, self._group,
-                                            ('v2i', self._get_vertices()),
-                                            ('c4B', self._color * 4),
-                                            ('t3f', self.texture.tex_coords))
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        vertices = self._get_vertices_3d()
+        colors = self._color * (len(vertices) // 3)  # Match vertex count  
+        # Convert 2D tex coords to 3D
+        tex_coords_2d = self.texture.tex_coords
+        tex_coords_3d = self._convert_tex_coords_to_3d(tex_coords_2d)
+        self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_TRIANGLES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('f', vertices),
+                                               colors=('Bn', colors),
+                                               tex_coords=('f', tex_coords_3d))
+
+    def _convert_tex_coords_to_3d(self, tex_coords_2d):
+        """Convert 2D texture coordinates to 3D by adding z=0 component"""
+        tex_coords_3d = []
+        for i in range(0, len(tex_coords_2d), 2):
+            tex_coords_3d.extend([tex_coords_2d[i], tex_coords_2d[i+1], 0.0])
+        return tex_coords_3d
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -103,10 +134,26 @@ class FrameTextureGraphicElement(GraphicElement):
         assert self._vertex_list is None
 
         # 36 vertices: 4 for each of the 9 rectangles.
-        self._vertex_list = self._batch.add(36, gl.GL_QUADS, self._group,
-                                            ('v2i', self._get_vertices()),
-                                            ('c4B', self._color * 36),
-                                            ('t2f', self._get_tex_coords()))
+        # Get the default shader program and use it to create vertex list
+        program = pyglet.graphics.get_default_shader()
+        vertices = self._get_vertices_3d()
+        colors = self._color * (len(vertices) // 3)  # Match vertex count
+        # Convert 2D tex coords to 3D
+        tex_coords_2d = self._get_tex_coords()
+        tex_coords_3d = self._convert_tex_coords_to_3d(tex_coords_2d)
+        self._vertex_list = program.vertex_list(len(vertices) // 3, gl.GL_TRIANGLES,
+                                               batch=self._batch,
+                                               group=self._group,
+                                               position=('f', vertices),
+                                               colors=('Bn', colors),
+                                               tex_coords=('f', tex_coords_3d))
+
+    def _convert_tex_coords_to_3d(self, tex_coords_2d):
+        """Convert 2D texture coordinates to 3D by adding z=0 component"""
+        tex_coords_3d = []
+        for i in range(0, len(tex_coords_2d), 2):
+            tex_coords_3d.extend([tex_coords_2d[i], tex_coords_2d[i+1], 0.0])
+        return tex_coords_3d
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left

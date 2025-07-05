@@ -103,7 +103,7 @@ class TestLoadGraphics(unittest.TestCase):
 
     def setUp(self):
         self.batch = pyglet.graphics.Batch()
-        self.group = pyglet.graphics.OrderedGroup(1)
+        self.group = pyglet.graphics.Group(order=1)
 
         self.texture_theme = Theme({'image': 'panel.png'}, 'theme')
         self.texture_region_theme = Theme({'image': {'source': 'panel.png', 'region': [0, 0, 16, 16]}}, 'theme')

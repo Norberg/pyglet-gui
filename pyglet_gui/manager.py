@@ -6,7 +6,7 @@ from pyglet_gui.core import Rectangle
 from pyglet_gui.containers import Wrapper
 
 
-class ViewerManagerGroup(pyglet.graphics.OrderedGroup):
+class ViewerManagerGroup(pyglet.graphics.Group):
     """
     Ensure that Viewers inside Manager can be drawn with
     blending enabled, and that Managers are drawn in a particular
@@ -23,24 +23,37 @@ class ViewerManagerGroup(pyglet.graphics.OrderedGroup):
         """
         Creates a new ViewerManagerGroup. By default it is on top.
         """
-        pyglet.graphics.OrderedGroup.__init__(self, self._get_next_top_order(), parent)
+        pyglet.graphics.Group.__init__(self, order=self._get_next_top_order(), parent=parent)
         self.own_order = self.order
 
     def __eq__(self, other):
         """
         When compared with other ViewerManagerGroups, we'll return the own_order
-        compared against theirs; otherwise use the OrderedGroup comparison.
+        compared against theirs; otherwise use the Group comparison.
         """
         if isinstance(other, ViewerManagerGroup):
             return self.own_order == other.own_order
         else:
-            return pyglet.graphics.OrderedGroup.__eq__(self, other)
+            return pyglet.graphics.Group.__eq__(self, other)
 
     def __lt__(self, other):
         if isinstance(other, ViewerManagerGroup):
             return self.own_order < other.own_order
+        elif hasattr(other, 'order'):
+            # Compare with other Group's order attribute
+            other_order = other.order
+            if hasattr(other_order, 'order'):
+                # If other.order is also a Group object, get its order
+                return self.order < other_order.order
+            else:
+                # other.order is a numeric value
+                return self.order < other_order
+        elif isinstance(other, (int, float)):
+            # Direct numeric comparison
+            return self.order < other
         else:
-            return pyglet.graphics.OrderedGroup.__lt__(self, other)
+            # Fallback to order-based comparison
+            return self.order < getattr(other, '_order', 0)
 
     def __hash__(self):
         return hash((self.order, self.parent))
@@ -61,7 +74,8 @@ class ViewerManagerGroup(pyglet.graphics.OrderedGroup):
         """
         Ensure that blending is set.
         """
-        gl.glPushAttrib(gl.GL_ENABLE_BIT | gl.GL_CURRENT_BIT)
+        # glPushAttrib/glPopAttrib removed in pyglet 2.1+
+        # Just enable blending directly - modern OpenGL approach
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
@@ -69,7 +83,9 @@ class ViewerManagerGroup(pyglet.graphics.OrderedGroup):
         """
         Restore previous blending state.
         """
-        gl.glPopAttrib()
+        # glPushAttrib/glPopAttrib removed in pyglet 2.1+
+        # No need to restore state - pyglet handles this automatically
+        pass
 
 
 class ViewerManager(Wrapper):
@@ -95,10 +111,10 @@ class ViewerManager(Wrapper):
             self._has_own_batch = False
 
         self._root_group = ViewerManagerGroup(parent=group)
-        self.group = {'panel': pyglet.graphics.OrderedGroup(10, self.root_group),
-                      'background': pyglet.graphics.OrderedGroup(20, self.root_group),
-                      'foreground': pyglet.graphics.OrderedGroup(30, self.root_group),
-                      'highlight': pyglet.graphics.OrderedGroup(40, self.root_group)}
+        self.group = {'panel': pyglet.graphics.Group(order=10, parent=self.root_group),
+                      'background': pyglet.graphics.Group(order=20, parent=self.root_group),
+                      'foreground': pyglet.graphics.Group(order=30, parent=self.root_group),
+                      'highlight': pyglet.graphics.Group(order=40, parent=self.root_group)}
 
         self.content.set_manager(self)
         self.content.parent = self
