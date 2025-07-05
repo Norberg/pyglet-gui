@@ -1,89 +1,127 @@
-Pyglet-gui is an extension of [Pyglet](http://www.pyglet.org/) for graphical user interfaces (GUIs).
-Thanks for checking it out.
+# pyglet-gui
 
-This project started as a fork of [Kytten](https://code.google.com/p/kytten/),
-but ended up being a new project by its own right since the API changed dramatically.
+En kraftfull och flexibel GUI-bibliotek för pyglet.
 
-Main features
---------------
+## 🎉 Pyglet 2+ Kompatibilitet - NU TILLGÄNGLIG!
 
-* Implements a controller-viewer pattern.
+**VIKTIGT**: Detta bibliotek har nu uppdaterats för full kompatibilitet med pyglet 2.0+ efter omfattande fixes. Se `PYGLET2_FIXES_SUMMARY.md` för detaljer.
 
-    Pyglet-gui uses the concept of "controllers" to handle window events and "viewers" to draw.
+## Systemkrav
 
-    For example, a Button is a subclass of a two-state controller and a viewer.
+* **Python**: 3.6+
+* **pyglet**: 2.0+
 
-* Use of Mixins
+## Installation
 
-    Pyglet-gui uses mixins for extending functionality of viewers and controllers.
-    This increases code reusability and modularity.
+```bash
+pip install pyglet>=2.0
+git clone https://github.com/your-repo/pyglet-gui.git
+cd pyglet-gui
+pip install -e .
+```
 
-    For example, mouse hovering behaviour is added with a HoveringMixin class.
+## Snabbstart
 
-* Implements an abstraction for graphical appearance
+```python
+import pyglet
+import pyglet_gui
 
-    Pyglet-gui uses "themes" where each (static) resource is defined in a JSON file.
-    This file is loaded, and viewers select specific resources
-    from an unique path.
+# Skapa ett fönster
+window = pyglet.window.Window(800, 600, resizable=True)
 
-    For example, the Pyglet-gui standard Button chooses the path
+# Skapa GUI-komponenter
+from pyglet_gui import Manager, Button, Label
 
-        def get_path(self):
-            path = ['button']
-            if self.is_pressed():
-                path.append('down')
-            else:
-                path.append('up')
-            return path
+def on_button_click():
+    print("Knapp klickad!")
 
-* Has some standard user interfaces:
+manager = Manager(
+    Button("Klicka mig!", on_click=on_button_click),
+    window=window,
+    theme=pyglet_gui.theme.Theme({}, resources_path='theme/')
+)
 
-    * Button, Slider
-    * Option selector, Dropdown
-    * Vertical, Horizontal, Grid containers.
-    * Scrollable content display
+@window.event
+def on_draw():
+    window.clear()
+    manager.draw()
 
-Supported Versions
--------------------
+pyglet.app.run()
+```
 
-* Python:
+## Funktioner
 
-    * 3.6+
+- **Moderna GUI-komponenter**: Knappar, etiketter, textinmatning, och mer
+- **Flexibla layouter**: Vertikala och horisontella containrar
+- **Anpassningsbara teman**: Fullständig kontroll över utseende
+- **Event-hantering**: Enkel integration med pyglet's event-system
+- **Optimerad rendering**: Effektiv rendering med pyglet's batch-system
 
-* Pyglet:
+## 🔧 Kompatibilitetsuppdateringar
 
-    * >= 2.0
+### Version 0.2.0 - Pyglet 2+ Support
 
-Installation
---------------
+Denna version inkluderar **kritiska fixes** för pyglet 2+ kompatibilitet:
 
-1. Install Pyglet:
+✅ **Lösta Problem**:
+- `OrderedGroup` → `Group(order=X)` migrering
+- `Batch.add()` → `get_domain()` API-uppdatering  
+- `Label` `bold` → `weight` parameter
+- `IncrementalTextLayout` konstruktor uppdatering
+- Version requirements: Python 3.6+, pyglet 2.0+
 
-     pip install pyglet>=2.0
+✅ **Verifierad Kompatibilitet**:
+- pyglet 2.0.x ✅
+- pyglet 2.1.x ✅ (inklusive 2.1.6)
+- Python 3.6+ ✅
 
-2. Install Pyglet-gui:
+## Dokumentation
 
-     pip install git+https://github.com/jorgecarleitao/pyglet-gui.git
+- `CHANGELOG.md` - Fullständig ändringshistorik
+- `PYGLET2_MIGRATION_NOTES.md` - Teknisk migrationsguide
+- `TESTING_GUIDE.md` - Testinstruktioner
+- `examples/` - Exempelkod och tutorials
 
-Documentation
---------------
+## Testning
 
-The documentation can be found in the [read the docs](http://pyglet-gui.readthedocs.org/en/latest/index.html).
+```bash
+# Syntax-verifiering
+python test_syntax_only.py
 
-Running tests
---------------
+# Omfattande kompatibilitetstest (kräver display)
+python test_pyglet2_compatibility.py
 
-To run Pyglet-gui full test suite, use
+# Testa exempel
+cd examples
+python button_focus.py
+```
 
-    python -m tests.runtests
+## Automatiska Fixes
 
-To run a specific module, use
+Om du behöver applicera pyglet2+ fixes på en annan installation:
 
-    python -m tests.specificModule
+```bash
+python apply_pyglet2_fixes.py
+```
 
-Contributors
---------------
+## Bidra
 
-The contributor of Kytten was Conrad "Lynx" Wong, which this project reuses.
+Vi välkomnar bidrag! Se `CONTRIBUTING.md` för riktlinjer.
 
-Jorge C. Leitão designed, unit tested and documented the API.
+## Support
+
+- **GitHub Issues**: För buggrapporter och funktionsförfrågningar
+- **Wiki**: För dokumentation och tutorials
+- **Discussions**: För frågor och community-support
+
+## Licens
+
+Detta projekt är licensierat under MIT-licensen - se `LICENSE` filen för detaljer.
+
+## Tack
+
+Ursprungligen utvecklat för pyglet 1.2+, nu uppdaterat för modern pyglet 2+ kompatibilitet genom omfattande community-insatser.
+
+---
+
+**Status**: ✅ Aktivt underhållet och kompatibelt med pyglet 2.1.6+

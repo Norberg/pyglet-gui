@@ -30,9 +30,11 @@ class GraphicElement(Rectangle):
     @abstractmethod
     def _load(self):
         assert self._vertex_list is None
-        self._vertex_list = self._batch.add(12, gl.GL_LINES, self._group,
-                                            ('v2i', self._get_vertices()),
-                                            ('c4B', self._color * 12))
+        # Create the domain for GL_LINES mode and add vertex list
+        domain = self._batch.get_domain(False, False, gl.GL_LINES, self._group, {'v2i': ('v', 2), 'c4B': ('c', 4)})
+        self._vertex_list = domain.create(12)
+        self._vertex_list.vertices = self._get_vertices()
+        self._vertex_list.colors = self._color * 12
 
     @abstractmethod
     def _get_vertices(self):
@@ -75,10 +77,12 @@ class TextureGraphicElement(GraphicElement):
 
     def _load(self):
         assert self._vertex_list is None
-        self._vertex_list = self._batch.add(4, gl.GL_QUADS, self._group,
-                                            ('v2i', self._get_vertices()),
-                                            ('c4B', self._color * 4),
-                                            ('t3f', self.texture.tex_coords))
+        # Create the domain for GL_QUADS mode and add vertex list
+        domain = self._batch.get_domain(False, False, gl.GL_QUADS, self._group, {'v2i': ('v', 2), 'c4B': ('c', 4), 't3f': ('t', 3)})
+        self._vertex_list = domain.create(4)
+        self._vertex_list.vertices = self._get_vertices()
+        self._vertex_list.colors = self._color * 4
+        self._vertex_list.tex_coords = self.texture.tex_coords
 
     def _get_vertices(self):
         x1, y1 = int(self._x), int(self._y)
@@ -103,10 +107,12 @@ class FrameTextureGraphicElement(GraphicElement):
         assert self._vertex_list is None
 
         # 36 vertices: 4 for each of the 9 rectangles.
-        self._vertex_list = self._batch.add(36, gl.GL_QUADS, self._group,
-                                            ('v2i', self._get_vertices()),
-                                            ('c4B', self._color * 36),
-                                            ('t2f', self._get_tex_coords()))
+        # Create the domain for GL_QUADS mode and add vertex list
+        domain = self._batch.get_domain(False, False, gl.GL_QUADS, self._group, {'v2i': ('v', 2), 'c4B': ('c', 4), 't2f': ('t', 2)})
+        self._vertex_list = domain.create(36)
+        self._vertex_list.vertices = self._get_vertices()
+        self._vertex_list.colors = self._color * 36
+        self._vertex_list.tex_coords = self._get_tex_coords()
 
     def _get_tex_coords(self):
         x1, y1 = self.outer_texture.tex_coords[0:2]  # outer's lower left
