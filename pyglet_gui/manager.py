@@ -80,7 +80,7 @@ class ViewerManager(Wrapper):
                  group=None,
                  anchor=ANCHOR_CENTER,
                  offset=(0, 0)):
-        super().__init__(content, anchor=anchor)
+        super(ViewerManager, self).__init__(content, anchor=anchor)
 
         assert isinstance(theme, dict)
         self._theme = theme
@@ -179,7 +179,7 @@ class ViewerManager(Wrapper):
 
     def reset_size(self, reset_parent=True):
         # Manager never has parent and thus never reset_parent.
-        super().reset_size(reset_parent=False)
+        super(ViewerManager, self).reset_size(reset_parent=False)
 
         # if is a bottom-up, we have to reposition ourselves.
         if reset_parent:
@@ -299,7 +299,7 @@ class ControllerManager:
         elif self.wheel_hint in self._controllers:
             return self.wheel_hint.on_mouse_scroll(x, y, scroll_x, scroll_y)
         else:
-            return True
+            return False
 
     def on_text(self, text):
         if self._focus and text != '\r' and hasattr(self._focus, 'on_text'):

@@ -43,13 +43,30 @@ Main features
     * Vertical, Horizontal, Grid containers.
     * Scrollable content display
 
+Supported Versions
+-------------------
+
+* Python:
+
+    * 2.7
+    * 3.2
+    * 3.3
+    * 3.4
+
+* Pyglet:
+
+    * >= 1.2
+
 Installation
 --------------
 
-1. Get a copy of the source from [GitHub](https://github.com/jorgecarleitao/pyglet-gui).
+1. Install Pyglet:
 
-2. python setup.py install
+     pip install --upgrade http://pyglet.googlecode.com/archive/tip.zip
 
+2. Install Pyglet-gui:
+
+     pip install git+https://github.com/jorgecarleitao/pyglet-gui.git
 
 Documentation
 --------------
